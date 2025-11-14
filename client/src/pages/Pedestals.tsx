@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Droplets, Zap, MapPin } from "lucide-react";
 import type { Pedestal } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc9b.png";
 
 export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
+  const { toast } = useToast();
 
   const { data: pedestals, isLoading } = useQuery<Pedestal[]>({
     queryKey: ["/api/pedestals"],
@@ -20,26 +22,38 @@ export default function Pedestals() {
 
   const updatePedestalMutation = useMutation({
     mutationFn: async (data: { id: string; waterEnabled?: boolean; electricityEnabled?: boolean }) => {
-      return apiRequest("PATCH", `/api/pedestals/${data.id}`, data);
+      const res = await apiRequest("PATCH", `/api/pedestals/${data.id}`, data);
+      return (await res.json()) as Pedestal;
     },
     onSuccess: (updatedPedestal) => {
       queryClient.invalidateQueries({ queryKey: ["/api/pedestals"] });
-      setSelectedPedestal(updatedPedestal as Pedestal);
+      setSelectedPedestal(updatedPedestal);
+      toast({
+        title: "Pedestal Updated",
+        description: "Service settings have been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error?.message || "Failed to update pedestal. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "available":
-        return "bg-green-500";
+        return "default";
       case "occupied":
-        return "bg-blue-500";
+        return "secondary";
       case "maintenance":
-        return "bg-amber-500";
+        return "outline";
       case "offline":
-        return "bg-gray-500";
+        return "destructive";
       default:
-        return "bg-gray-500";
+        return "outline";
     }
   };
 
@@ -87,8 +101,17 @@ export default function Pedestals() {
           </Badge>
         </div>
 
-        <div className="space-y-4">
-          {pedestals?.map((pedestal, index) => (
+        {!pedestals || pedestals.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <p className="text-muted-foreground" data-testid="text-empty-state">
+                No pedestals available.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {pedestals.map((pedestal, index) => (
             <div key={pedestal.id}>
               <Card 
                 className="hover-elevate cursor-pointer"
@@ -103,7 +126,7 @@ export default function Pedestals() {
                           Berth {pedestal.berthNumber}
                         </h3>
                         <Badge 
-                          className={getStatusColor(pedestal.status)}
+                          variant={getStatusVariant(pedestal.status)}
                           data-testid={`badge-status-${pedestal.id}`}
                         >
                           {getStatusLabel(pedestal.status)}
@@ -156,8 +179,9 @@ export default function Pedestals() {
                 </Card>
               )}
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Dialog open={!!selectedPedestal} onOpenChange={() => setSelectedPedestal(null)}>
@@ -170,7 +194,7 @@ export default function Pedestals() {
           {selectedPedestal && (
             <div className="space-y-6">
               <div>
-                <Badge className={getStatusColor(selectedPedestal.status)}>
+                <Badge variant={getStatusVariant(selectedPedestal.status)}>
                   {getStatusLabel(selectedPedestal.status)}
                 </Badge>
               </div>
