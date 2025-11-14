@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Anchor, MapPin, Clock, Shield } from "lucide-react";
-import martekLogoUrl from "@assets/generated_images/Martek_marina_logo_brand_3fbeaeb1.png";
+import martekLogoUrl from "@assets/martek-logo.png";
 import marinaHeroUrl from "@assets/generated_images/Marina_harbor_hero_background_a1b4edec.png";
 
 export default function Landing() {

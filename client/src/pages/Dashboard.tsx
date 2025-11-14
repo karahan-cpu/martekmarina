@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Anchor, Droplets, Zap, FileText, Calendar, Settings } from "lucide-react";
 import type { Pedestal, Booking } from "@shared/schema";
 import marinarBg from "@assets/generated_images/Marina_harbor_hero_background_a1b4edec.png";
-import martekLogo from "@assets/generated_images/Martek_marina_logo_brand_3fbeaeb1.png";
+import martekLogo from "@assets/martek-logo.png";
 import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc9b.png";
 import { Link } from "wouter";
 
