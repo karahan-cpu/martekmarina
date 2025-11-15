@@ -34,13 +34,17 @@ export default function Bookings() {
 
   const createBookingMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/bookings", data);
+      const res = await apiRequest("POST", "/api/bookings", data);
+      return (await res.json()) as Booking;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pedestals"] });
       setStartDate(undefined);
       setEndDate(undefined);
       setSelectedPedestalId("");
+      setNeedsWater(true);
+      setNeedsElectricity(true);
       toast({
         title: "Booking Created",
         description: "Your berth booking has been confirmed successfully.",
@@ -128,7 +132,11 @@ export default function Bookings() {
                   mode="single"
                   selected={startDate}
                   onSelect={setStartDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return date < today;
+                  }}
                   className="rounded-md border"
                   data-testid="calendar-start-date"
                 />
@@ -140,7 +148,14 @@ export default function Bookings() {
                   mode="single"
                   selected={endDate}
                   onSelect={setEndDate}
-                  disabled={(date) => !startDate || date <= startDate}
+                  disabled={(date) => {
+                    if (!startDate) return true;
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    const checkDate = new Date(date);
+                    checkDate.setHours(0, 0, 0, 0);
+                    return checkDate <= start;
+                  }}
                   className="rounded-md border"
                   data-testid="calendar-end-date"
                 />
@@ -149,22 +164,30 @@ export default function Bookings() {
 
             <div className="space-y-3">
               <Label htmlFor="pedestal-select">Select Pedestal</Label>
-              <Select value={selectedPedestalId} onValueChange={setSelectedPedestalId}>
-                <SelectTrigger id="pedestal-select" data-testid="select-pedestal">
-                  <SelectValue placeholder="Choose an available berth" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePedestals.map((pedestal) => (
-                    <SelectItem 
-                      key={pedestal.id} 
-                      value={pedestal.id}
-                      data-testid={`select-item-${pedestal.id}`}
-                    >
-                      Berth {pedestal.berthNumber} - Available
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {availablePedestals.length === 0 ? (
+                <div className="p-4 border rounded-md bg-muted/50">
+                  <p className="text-sm text-muted-foreground">
+                    No available pedestals at this time. Please check back later.
+                  </p>
+                </div>
+              ) : (
+                <Select value={selectedPedestalId} onValueChange={setSelectedPedestalId}>
+                  <SelectTrigger id="pedestal-select" data-testid="select-pedestal">
+                    <SelectValue placeholder="Choose an available berth" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availablePedestals.map((pedestal) => (
+                      <SelectItem 
+                        key={pedestal.id} 
+                        value={pedestal.id}
+                        data-testid={`select-item-${pedestal.id}`}
+                      >
+                        Berth {pedestal.berthNumber} - Available
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-3">
