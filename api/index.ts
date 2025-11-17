@@ -11,8 +11,10 @@ app.use(express.urlencoded({ extended: false }));
 app.get("/api/pedestals", async (_req, res) => {
   try {
     const pedestals = await storage.getPedestals();
+    console.log(`[API] Returning ${pedestals.length} pedestals`);
     res.json(pedestals);
   } catch (error) {
+    console.error("[API] Error fetching pedestals:", error);
     res.status(500).json({ error: "Failed to fetch pedestals" });
   }
 });

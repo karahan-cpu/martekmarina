@@ -46,6 +46,7 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
+    console.log("[Storage] Initializing sample data...");
     const samplePedestals: InsertPedestal[] = [
       { berthNumber: "A-101", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 100 },
       { berthNumber: "A-102", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 100 },
@@ -73,6 +74,7 @@ export class MemStorage implements IStorage {
       const id = randomUUID();
       this.pedestals.set(id, { ...p, id });
     });
+    console.log(`[Storage] Initialized ${this.pedestals.size} pedestals`);
   }
 
   async getUser(id: string): Promise<User | undefined> {
