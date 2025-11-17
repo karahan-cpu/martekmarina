@@ -145,6 +145,18 @@ app.patch("/api/service-requests/:id", async (req, res) => {
   }
 });
 
+// Add error handler middleware
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[API] Unhandled error:", err);
+  console.error("[API] Error stack:", err?.stack);
+  if (!res.headersSent) {
+    res.status(500).json({ 
+      error: "Internal server error",
+      message: err?.message || "Unknown error"
+    });
+  }
+});
+
 // Export the Express app as a serverless function
 export default app;
 
