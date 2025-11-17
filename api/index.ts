@@ -10,12 +10,18 @@ app.use(express.urlencoded({ extended: false }));
 // Register all API routes (without creating HTTP server)
 app.get("/api/pedestals", async (_req, res) => {
   try {
+    if (!storage) {
+      throw new Error("Storage not initialized");
+    }
     const pedestals = await storage.getPedestals();
-    console.log(`[API] Returning ${pedestals.length} pedestals`);
-    res.json(pedestals);
-  } catch (error) {
+    res.json(pedestals || []);
+  } catch (error: any) {
     console.error("[API] Error fetching pedestals:", error);
-    res.status(500).json({ error: "Failed to fetch pedestals" });
+    console.error("[API] Error stack:", error?.stack);
+    res.status(500).json({ 
+      error: "Failed to fetch pedestals",
+      message: error?.message || "Unknown error"
+    });
   }
 });
 

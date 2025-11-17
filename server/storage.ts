@@ -38,16 +38,25 @@ export class MemStorage implements IStorage {
   private serviceRequests: Map<string, ServiceRequest>;
 
   constructor() {
-    this.users = new Map();
-    this.pedestals = new Map();
-    this.bookings = new Map();
-    this.serviceRequests = new Map();
-    this.initializeSampleData();
+    try {
+      this.users = new Map();
+      this.pedestals = new Map();
+      this.bookings = new Map();
+      this.serviceRequests = new Map();
+      this.initializeSampleData();
+    } catch (error) {
+      console.error("[Storage] Constructor error:", error);
+      // Ensure maps are initialized even if sample data fails
+      this.users = new Map();
+      this.pedestals = new Map();
+      this.bookings = new Map();
+      this.serviceRequests = new Map();
+    }
   }
 
   private initializeSampleData() {
-    console.log("[Storage] Initializing sample data...");
-    const samplePedestals: InsertPedestal[] = [
+    try {
+      const samplePedestals: InsertPedestal[] = [
       { berthNumber: "A-101", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 100 },
       { berthNumber: "A-102", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 100 },
       { berthNumber: "A-103", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 100 },
@@ -70,11 +79,14 @@ export class MemStorage implements IStorage {
       { berthNumber: "G-702", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 700 },
     ];
 
-    samplePedestals.forEach((p) => {
-      const id = randomUUID();
-      this.pedestals.set(id, { ...p, id });
-    });
-    console.log(`[Storage] Initialized ${this.pedestals.size} pedestals`);
+      samplePedestals.forEach((p) => {
+        const id = randomUUID();
+        this.pedestals.set(id, { ...p, id });
+      });
+    } catch (error) {
+      console.error("[Storage] Error initializing sample data:", error);
+      // Continue with empty storage if initialization fails
+    }
   }
 
   async getUser(id: string): Promise<User | undefined> {
