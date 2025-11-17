@@ -15,8 +15,11 @@ import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc
 
 export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
-  const [location] = useLocation();
   const { toast } = useToast();
+
+  const { data: pedestals, isLoading, error } = useQuery<Pedestal[]>({
+    queryKey: ["/api/pedestals"],
+  });
 
   // Check if there's a pedestal ID in the URL query params
   useEffect(() => {
@@ -29,10 +32,6 @@ export default function Pedestals() {
       }
     }
   }, [pedestals]);
-
-  const { data: pedestals, isLoading, error } = useQuery<Pedestal[]>({
-    queryKey: ["/api/pedestals"],
-  });
 
   // Log for debugging
   if (error) {
