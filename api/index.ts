@@ -7,8 +7,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Register all API routes (Vercel rewrites strip /api prefix)
-app.get("/pedestals", async (_req, res) => {
+// Register all API routes (handle both /api/pedestals and /pedestals)
+app.get("/api/pedestals", async (_req, res) => {
   try {
     if (!storage) {
       return res.status(500).json({ error: "Storage not initialized" });
@@ -25,7 +25,7 @@ app.get("/pedestals", async (_req, res) => {
   }
 });
 
-app.get("/pedestals/:id", async (req, res) => {
+app.get("/api/pedestals/:id", async (req, res) => {
   try {
     const pedestal = await storage.getPedestal(req.params.id);
     if (!pedestal) {
@@ -37,7 +37,7 @@ app.get("/pedestals/:id", async (req, res) => {
   }
 });
 
-app.patch("/pedestals/:id", async (req, res) => {
+app.patch("/api/pedestals/:id", async (req, res) => {
   try {
     const updated = await storage.updatePedestal(req.params.id, req.body);
     if (!updated) {
@@ -49,7 +49,7 @@ app.patch("/pedestals/:id", async (req, res) => {
   }
 });
 
-app.post("/pedestals", async (req, res) => {
+app.post("/api/pedestals", async (req, res) => {
   try {
     const validatedData = insertPedestalSchema.parse(req.body);
     const pedestal = await storage.createPedestal(validatedData);
@@ -59,7 +59,7 @@ app.post("/pedestals", async (req, res) => {
   }
 });
 
-app.get("/bookings", async (_req, res) => {
+app.get("/api/bookings", async (_req, res) => {
   try {
     const bookings = await storage.getBookings();
     res.json(bookings);
@@ -68,7 +68,7 @@ app.get("/bookings", async (_req, res) => {
   }
 });
 
-app.get("/bookings/:id", async (req, res) => {
+app.get("/api/bookings/:id", async (req, res) => {
   try {
     const booking = await storage.getBooking(req.params.id);
     if (!booking) {
@@ -80,7 +80,7 @@ app.get("/bookings/:id", async (req, res) => {
   }
 });
 
-app.post("/bookings", async (req, res) => {
+app.post("/api/bookings", async (req, res) => {
   try {
     const validatedData = insertBookingSchema.parse(req.body);
     const booking = await storage.createBooking(validatedData);
@@ -90,7 +90,7 @@ app.post("/bookings", async (req, res) => {
   }
 });
 
-app.patch("/bookings/:id", async (req, res) => {
+app.patch("/api/bookings/:id", async (req, res) => {
   try {
     const updated = await storage.updateBooking(req.params.id, req.body);
     if (!updated) {
@@ -102,7 +102,7 @@ app.patch("/bookings/:id", async (req, res) => {
   }
 });
 
-app.get("/service-requests", async (_req, res) => {
+app.get("/api/service-requests", async (_req, res) => {
   try {
     const requests = await storage.getServiceRequests();
     res.json(requests);
@@ -111,7 +111,7 @@ app.get("/service-requests", async (_req, res) => {
   }
 });
 
-app.get("/service-requests/:id", async (req, res) => {
+app.get("/api/service-requests/:id", async (req, res) => {
   try {
     const request = await storage.getServiceRequest(req.params.id);
     if (!request) {
@@ -123,7 +123,7 @@ app.get("/service-requests/:id", async (req, res) => {
   }
 });
 
-app.post("/service-requests", async (req, res) => {
+app.post("/api/service-requests", async (req, res) => {
   try {
     const validatedData = insertServiceRequestSchema.parse(req.body);
     const request = await storage.createServiceRequest(validatedData);
@@ -133,7 +133,7 @@ app.post("/service-requests", async (req, res) => {
   }
 });
 
-app.patch("/service-requests/:id", async (req, res) => {
+app.patch("/api/service-requests/:id", async (req, res) => {
   try {
     const updated = await storage.updateServiceRequest(req.params.id, req.body);
     if (!updated) {
