@@ -64,6 +64,16 @@ export class MemStorage implements IStorage {
       { berthNumber: "F-601", status: "occupied", waterEnabled: true, electricityEnabled: true, waterUsage: 90, electricityUsage: 8, currentUserId: "demo-user-id", locationX: 100, locationY: 600 },
       { berthNumber: "F-602", status: "offline", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 600 },
       { berthNumber: "F-603", status: "available", waterEnabled: true, electricityEnabled: false, waterUsage: 15, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 600 },
+      { berthNumber: "G-701", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 700 },
+      { berthNumber: "G-702", status: "available", waterEnabled: true, electricityEnabled: false, waterUsage: 10, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 700 },
+      { berthNumber: "G-703", status: "available", waterEnabled: false, electricityEnabled: true, waterUsage: 0, electricityUsage: 7, currentUserId: null, locationX: 200, locationY: 700 },
+      { berthNumber: "H-801", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 800 },
+      { berthNumber: "H-802", status: "available", waterEnabled: true, electricityEnabled: true, waterUsage: 5, electricityUsage: 4, currentUserId: null, locationX: 150, locationY: 800 },
+      { berthNumber: "H-803", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 800 },
+      { berthNumber: "I-901", status: "available", waterEnabled: true, electricityEnabled: true, waterUsage: 12, electricityUsage: 6, currentUserId: null, locationX: 100, locationY: 900 },
+      { berthNumber: "I-902", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 900 },
+      { berthNumber: "I-903", status: "available", waterEnabled: false, electricityEnabled: true, waterUsage: 0, electricityUsage: 9, currentUserId: null, locationX: 200, locationY: 900 },
+      { berthNumber: "J-1001", status: "available", waterEnabled: true, electricityEnabled: true, waterUsage: 8, electricityUsage: 5, currentUserId: null, locationX: 100, locationY: 1000 },
     ];
 
     samplePedestals.forEach((p) => {
