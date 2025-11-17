@@ -1,6 +1,6 @@
 import express from "express";
 import { storage } from "../server/storage";
-import { insertPedestalSchema, insertBookingSchema, insertServiceRequestSchema } from "@shared/schema";
+import { insertPedestalSchema, insertBookingSchema, insertServiceRequestSchema } from "../shared/schema";
 
 const app = express();
 
