@@ -1,218 +1,94 @@
-import express, { type Request, type Response } from "express";
-
-// Initialize modules lazily to handle import errors
-let storage: any = null;
-let insertPedestalSchema: any = null;
-let insertBookingSchema: any = null;
-let insertServiceRequestSchema: any = null;
-
-async function initializeModules() {
-  if (storage !== null) return; // Already initialized
-  
-  try {
-    const storageModule = await import("../server/storage");
-    storage = storageModule.storage;
-    const schemaModule = await import("../shared/schema");
-    insertPedestalSchema = schemaModule.insertPedestalSchema;
-    insertBookingSchema = schemaModule.insertBookingSchema;
-    insertServiceRequestSchema = schemaModule.insertServiceRequestSchema;
-    console.log("[API] Modules initialized successfully");
-  } catch (error: any) {
-    console.error("[API] CRITICAL: Failed to import modules:", error);
-    console.error("[API] Error message:", error?.message);
-    console.error("[API] Error stack:", error?.stack);
-    
-    // Create fallback storage to prevent complete failure
-    storage = {
-      getPedestals: async () => {
-        console.error("[API] Using fallback storage - returning empty array");
-        return [];
-      },
-      getPedestal: async () => undefined,
-      updatePedestal: async () => undefined,
-      createPedestal: async () => ({ id: "error", berthNumber: "ERROR" }),
-      getBookings: async () => [],
-      getBooking: async () => undefined,
-      createBooking: async () => ({ id: "error" }),
-      updateBooking: async () => undefined,
-      getServiceRequests: async () => [],
-      getServiceRequest: async () => undefined,
-      createServiceRequest: async () => ({ id: "error" }),
-      updateServiceRequest: async () => undefined,
-    };
-  }
-}
-
-// Initialize immediately
-const initPromise = initializeModules();
+import express from "express";
 
 const app = express();
-
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Register all API routes (handle both /api/pedestals and /pedestals)
-app.get("/api/pedestals", async (_req, res) => {
-  try {
-    await initPromise;
-    if (!storage) {
-      return res.status(500).json({ error: "Storage not initialized" });
-    }
-    const pedestals = await storage.getPedestals();
-    res.json(pedestals || []);
-  } catch (error: any) {
-    console.error("[API] Error fetching pedestals:", error);
-    console.error("[API] Error stack:", error?.stack);
-    res.status(500).json({ 
-      error: "Failed to fetch pedestals",
-      message: error?.message || "Unknown error"
-    });
-  }
+// Simple in-memory storage for pedestals
+const pedestals = [
+  { id: "1", berthNumber: "A-101", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 100 },
+  { id: "2", berthNumber: "A-102", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 100 },
+  { id: "3", berthNumber: "A-103", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 100 },
+  { id: "4", berthNumber: "B-201", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 200 },
+  { id: "5", berthNumber: "B-202", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 200 },
+  { id: "6", berthNumber: "B-203", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 200 },
+  { id: "7", berthNumber: "C-301", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 300 },
+  { id: "8", berthNumber: "C-302", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 300 },
+  { id: "9", berthNumber: "C-303", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 300 },
+  { id: "10", berthNumber: "D-401", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 400 },
+  { id: "11", berthNumber: "D-402", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 400 },
+  { id: "12", berthNumber: "D-403", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 400 },
+  { id: "13", berthNumber: "E-501", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 500 },
+  { id: "14", berthNumber: "E-502", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 500 },
+  { id: "15", berthNumber: "E-503", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 500 },
+  { id: "16", berthNumber: "F-601", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 600 },
+  { id: "17", berthNumber: "F-602", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 600 },
+  { id: "18", berthNumber: "F-603", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 200, locationY: 600 },
+  { id: "19", berthNumber: "G-701", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 700 },
+  { id: "20", berthNumber: "G-702", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 150, locationY: 700 },
+];
+
+// GET /api/pedestals
+app.get("/api/pedestals", (_req, res) => {
+  res.json(pedestals);
 });
 
-app.get("/api/pedestals/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const pedestal = await storage.getPedestal(req.params.id);
-    if (!pedestal) {
-      return res.status(404).json({ error: "Pedestal not found" });
-    }
-    res.json(pedestal);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch pedestal" });
+// GET /api/pedestals/:id
+app.get("/api/pedestals/:id", (req, res) => {
+  const pedestal = pedestals.find(p => p.id === req.params.id);
+  if (!pedestal) {
+    return res.status(404).json({ error: "Pedestal not found" });
   }
+  res.json(pedestal);
 });
 
-app.patch("/api/pedestals/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const updated = await storage.updatePedestal(req.params.id, req.body);
-    if (!updated) {
-      return res.status(404).json({ error: "Pedestal not found" });
-    }
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update pedestal" });
+// PATCH /api/pedestals/:id
+app.patch("/api/pedestals/:id", (req, res) => {
+  const index = pedestals.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Pedestal not found" });
   }
+  pedestals[index] = { ...pedestals[index], ...req.body };
+  res.json(pedestals[index]);
 });
 
-app.post("/api/pedestals", async (req, res) => {
-  try {
-    await initPromise;
-    const validatedData = insertPedestalSchema.parse(req.body);
-    const pedestal = await storage.createPedestal(validatedData);
-    res.status(201).json(pedestal);
-  } catch (error) {
-    res.status(400).json({ error: "Invalid pedestal data" });
-  }
+// POST /api/pedestals
+app.post("/api/pedestals", (req, res) => {
+  const newPedestal = {
+    id: String(pedestals.length + 1),
+    ...req.body,
+  };
+  pedestals.push(newPedestal);
+  res.status(201).json(newPedestal);
 });
 
-app.get("/api/bookings", async (_req, res) => {
-  try {
-    await initPromise;
-    const bookings = await storage.getBookings();
-    res.json(bookings);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch bookings" });
-  }
+// GET /api/bookings
+app.get("/api/bookings", (_req, res) => {
+  res.json([]);
 });
 
-app.get("/api/bookings/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const booking = await storage.getBooking(req.params.id);
-    if (!booking) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
-    res.json(booking);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch booking" });
-  }
+// POST /api/bookings
+app.post("/api/bookings", (req, res) => {
+  const booking = {
+    id: String(Date.now()),
+    ...req.body,
+    createdAt: new Date().toISOString(),
+  };
+  res.status(201).json(booking);
 });
 
-app.post("/api/bookings", async (req, res) => {
-  try {
-    await initPromise;
-    const validatedData = insertBookingSchema.parse(req.body);
-    const booking = await storage.createBooking(validatedData);
-    res.status(201).json(booking);
-  } catch (error) {
-    res.status(400).json({ error: "Invalid booking data" });
-  }
+// GET /api/service-requests
+app.get("/api/service-requests", (_req, res) => {
+  res.json([]);
 });
 
-app.patch("/api/bookings/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const updated = await storage.updateBooking(req.params.id, req.body);
-    if (!updated) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update booking" });
-  }
+// POST /api/service-requests
+app.post("/api/service-requests", (req, res) => {
+  const request = {
+    id: String(Date.now()),
+    ...req.body,
+    createdAt: new Date().toISOString(),
+  };
+  res.status(201).json(request);
 });
 
-app.get("/api/service-requests", async (_req, res) => {
-  try {
-    await initPromise;
-    const requests = await storage.getServiceRequests();
-    res.json(requests);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch service requests" });
-  }
-});
-
-app.get("/api/service-requests/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const request = await storage.getServiceRequest(req.params.id);
-    if (!request) {
-      return res.status(404).json({ error: "Service request not found" });
-    }
-    res.json(request);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch service request" });
-  }
-});
-
-app.post("/api/service-requests", async (req, res) => {
-  try {
-    await initPromise;
-    const validatedData = insertServiceRequestSchema.parse(req.body);
-    const request = await storage.createServiceRequest(validatedData);
-    res.status(201).json(request);
-  } catch (error) {
-    res.status(400).json({ error: "Invalid service request data" });
-  }
-});
-
-app.patch("/api/service-requests/:id", async (req, res) => {
-  try {
-    await initPromise;
-    const updated = await storage.updateServiceRequest(req.params.id, req.body);
-    if (!updated) {
-      return res.status(404).json({ error: "Service request not found" });
-    }
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update service request" });
-  }
-});
-
-// Add error handler middleware
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error("[API] Unhandled error:", err);
-  console.error("[API] Error stack:", err?.stack);
-  if (!res.headersSent) {
-    res.status(500).json({ 
-      error: "Internal server error",
-      message: err?.message || "Unknown error"
-    });
-  }
-});
-
-// Export the Express app as a serverless function
 export default app;
-
