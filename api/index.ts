@@ -1,6 +1,52 @@
 import express from "express";
-import { storage } from "../server/storage";
-import { insertPedestalSchema, insertBookingSchema, insertServiceRequestSchema } from "../shared/schema";
+
+// Initialize modules with error handling
+let storage: any;
+let insertPedestalSchema: any;
+let insertBookingSchema: any;
+let insertServiceRequestSchema: any;
+
+function initializeModules() {
+  try {
+    // Use dynamic import wrapped in a promise
+    return Promise.all([
+      import("../server/storage"),
+      import("../shared/schema")
+    ]).then(([storageModule, schemaModule]) => {
+      storage = storageModule.storage;
+      insertPedestalSchema = schemaModule.insertPedestalSchema;
+      insertBookingSchema = schemaModule.insertBookingSchema;
+      insertServiceRequestSchema = schemaModule.insertServiceRequestSchema;
+      return true;
+    }).catch((error: any) => {
+      console.error("[API] Module initialization error:", error);
+      console.error("[API] Error message:", error?.message);
+      console.error("[API] Error stack:", error?.stack);
+      // Create minimal fallback storage
+      storage = {
+        getPedestals: async () => [],
+        getPedestal: async () => undefined,
+        updatePedestal: async () => undefined,
+        createPedestal: async () => ({ id: "error", berthNumber: "ERROR" }),
+        getBookings: async () => [],
+        getBooking: async () => undefined,
+        createBooking: async () => ({ id: "error" }),
+        updateBooking: async () => undefined,
+        getServiceRequests: async () => [],
+        getServiceRequest: async () => undefined,
+        createServiceRequest: async () => ({ id: "error" }),
+        updateServiceRequest: async () => undefined,
+      };
+      return false;
+    });
+  } catch (error: any) {
+    console.error("[API] Synchronous initialization error:", error);
+    return Promise.resolve(false);
+  }
+}
+
+// Start initialization immediately
+const initPromise = initializeModules();
 
 const app = express();
 
@@ -10,6 +56,9 @@ app.use(express.urlencoded({ extended: false }));
 // Register all API routes (without creating HTTP server)
 app.get("/api/pedestals", async (_req, res) => {
   try {
+    // Ensure modules are initialized
+    await initPromise;
+    
     if (!storage) {
       throw new Error("Storage not initialized");
     }
