@@ -3,6 +3,9 @@ import express from "express";
 const app = express();
 app.use(express.json());
 
+// Simple in-memory storage for bookings
+const bookings: any[] = [];
+
 // Simple in-memory storage for pedestals
 const pedestals = [
   { id: "1", berthNumber: "A-101", status: "available", waterEnabled: false, electricityEnabled: false, waterUsage: 0, electricityUsage: 0, currentUserId: null, locationX: 100, locationY: 100 },
@@ -63,7 +66,16 @@ app.post("/api/pedestals", (req, res) => {
 
 // GET /api/bookings
 app.get("/api/bookings", (_req, res) => {
-  res.json([]);
+  res.json(bookings);
+});
+
+// GET /api/bookings/:id
+app.get("/api/bookings/:id", (req, res) => {
+  const booking = bookings.find(b => b.id === req.params.id);
+  if (!booking) {
+    return res.status(404).json({ error: "Booking not found" });
+  }
+  res.json(booking);
 });
 
 // POST /api/bookings
@@ -73,12 +85,46 @@ app.post("/api/bookings", (req, res) => {
     ...req.body,
     createdAt: new Date().toISOString(),
   };
+  bookings.push(booking);
+  
+  // Update pedestal status to occupied
+  const pedestalIndex = pedestals.findIndex(p => p.id === req.body.pedestalId);
+  if (pedestalIndex !== -1) {
+    pedestals[pedestalIndex] = {
+      ...pedestals[pedestalIndex],
+      status: "occupied",
+      currentUserId: req.body.userId || null,
+    };
+  }
+  
   res.status(201).json(booking);
 });
 
+// PATCH /api/bookings/:id
+app.patch("/api/bookings/:id", (req, res) => {
+  const index = bookings.findIndex(b => b.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Booking not found" });
+  }
+  bookings[index] = { ...bookings[index], ...req.body };
+  res.json(bookings[index]);
+});
+
+// Simple in-memory storage for service requests
+const serviceRequests: any[] = [];
+
 // GET /api/service-requests
 app.get("/api/service-requests", (_req, res) => {
-  res.json([]);
+  res.json(serviceRequests);
+});
+
+// GET /api/service-requests/:id
+app.get("/api/service-requests/:id", (req, res) => {
+  const request = serviceRequests.find(r => r.id === req.params.id);
+  if (!request) {
+    return res.status(404).json({ error: "Service request not found" });
+  }
+  res.json(request);
 });
 
 // POST /api/service-requests
@@ -88,7 +134,18 @@ app.post("/api/service-requests", (req, res) => {
     ...req.body,
     createdAt: new Date().toISOString(),
   };
+  serviceRequests.push(request);
   res.status(201).json(request);
+});
+
+// PATCH /api/service-requests/:id
+app.patch("/api/service-requests/:id", (req, res) => {
+  const index = serviceRequests.findIndex(r => r.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Service request not found" });
+  }
+  serviceRequests[index] = { ...serviceRequests[index], ...req.body };
+  res.json(serviceRequests[index]);
 });
 
 export default app;
