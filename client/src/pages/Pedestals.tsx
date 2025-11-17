@@ -13,6 +13,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc9b.png";
 
+const DEMO_PEDESTALS = [
+  { berthNumber: "G-701", locationX: 100, locationY: 700 },
+  { berthNumber: "G-702", locationX: 140, locationY: 700 },
+  { berthNumber: "G-703", locationX: 180, locationY: 700 },
+  { berthNumber: "H-801", locationX: 100, locationY: 820 },
+  { berthNumber: "H-802", locationX: 140, locationY: 820 },
+  { berthNumber: "H-803", locationX: 180, locationY: 820 },
+  { berthNumber: "I-901", locationX: 100, locationY: 940 },
+  { berthNumber: "I-902", locationX: 140, locationY: 940 },
+  { berthNumber: "I-903", locationX: 180, locationY: 940 },
+  { berthNumber: "J-1001", locationX: 120, locationY: 1020 },
+] as const;
+
 export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
@@ -77,6 +90,41 @@ export default function Pedestals() {
       toast({
         title: "Creation Failed",
         description: error?.message || "Failed to create pedestal. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generatePedestalsMutation = useMutation({
+    mutationFn: async () => {
+      await Promise.all(
+        DEMO_PEDESTALS.map(async (template) => {
+          const res = await apiRequest("POST", "/api/pedestals", {
+            berthNumber: template.berthNumber,
+            status: "available",
+            waterEnabled: false,
+            electricityEnabled: false,
+            waterUsage: 0,
+            electricityUsage: 0,
+            currentUserId: null,
+            locationX: template.locationX,
+            locationY: template.locationY,
+          });
+          await res.json();
+        }),
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/pedestals"] });
+      toast({
+        title: "Demo Pedestals Created",
+        description: "10 available pedestals were added for testing.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation Failed",
+        description: error?.message || "Unable to create demo pedestals.",
         variant: "destructive",
       });
     },
@@ -158,13 +206,23 @@ export default function Pedestals() {
               {pedestals?.length || 0} Total
             </Badge>
           </div>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="secondary" className="w-full md:w-auto" data-testid="button-add-pedestal">
-                Add Pedestal
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
+          <div className="flex flex-col md:flex-row gap-3">
+            <Button
+              variant="ghost"
+              className="w-full md:w-auto"
+              onClick={() => generatePedestalsMutation.mutate()}
+              disabled={generatePedestalsMutation.isPending}
+              data-testid="button-generate-demo"
+            >
+              {generatePedestalsMutation.isPending ? "Generating…" : "Generate 10 Available Pedestals"}
+            </Button>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="w-full md:w-auto" data-testid="button-add-pedestal">
+                  Add Pedestal
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Pedestal</DialogTitle>
                 <DialogDescription>
