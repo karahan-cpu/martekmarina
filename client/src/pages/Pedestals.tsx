@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Droplets, Zap, MapPin } from "lucide-react";
+import { Droplets, Zap, MapPin, QrCode } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import type { Pedestal } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +15,20 @@ import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc
 
 export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
+  const [location] = useLocation();
   const { toast } = useToast();
+
+  // Check if there's a pedestal ID in the URL query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pedestalId = params.get("pedestal");
+    if (pedestalId && pedestals) {
+      const pedestal = pedestals.find(p => p.id === pedestalId);
+      if (pedestal) {
+        setSelectedPedestal(pedestal);
+      }
+    }
+  }, [pedestals]);
 
   const { data: pedestals, isLoading, error } = useQuery<Pedestal[]>({
     queryKey: ["/api/pedestals"],
@@ -142,17 +156,21 @@ export default function Pedestals() {
             {pedestals.map((pedestal, index) => (
             <div key={pedestal.id}>
               <Card 
-                className="hover-elevate cursor-pointer"
-                onClick={() => setSelectedPedestal(pedestal)}
+                className="hover-elevate"
                 data-testid={`card-pedestal-${pedestal.id}`}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold" data-testid={`text-berth-${pedestal.id}`}>
-                          Berth {pedestal.berthNumber}
-                        </h3>
+                        <Link href={`/pedestal/${pedestal.berthNumber}`}>
+                          <h3 
+                            className="text-lg font-semibold hover:text-primary cursor-pointer underline decoration-2 underline-offset-2" 
+                            data-testid={`text-berth-${pedestal.id}`}
+                          >
+                            Berth {pedestal.berthNumber}
+                          </h3>
+                        </Link>
                         <Badge 
                           variant={getStatusVariant(pedestal.status)}
                           data-testid={`badge-status-${pedestal.id}`}
@@ -179,13 +197,29 @@ export default function Pedestals() {
                         </div>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      data-testid={`button-control-${pedestal.id}`}
-                    >
-                      Control
-                    </Button>
+                    <div className="flex gap-2">
+                      <Link href={`/pedestal/${pedestal.berthNumber}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          data-testid={`button-qr-${pedestal.id}`}
+                        >
+                          <QrCode className="w-4 h-4 mr-1" />
+                          QR
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPedestal(pedestal);
+                        }}
+                        data-testid={`button-control-${pedestal.id}`}
+                      >
+                        Control
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

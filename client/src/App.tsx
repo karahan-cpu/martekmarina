@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import Pedestals from "@/pages/Pedestals";
+import PedestalAccess from "@/pages/PedestalAccess";
 import Bookings from "@/pages/Bookings";
 import Services from "@/pages/Services";
 import Profile from "@/pages/Profile";
@@ -17,6 +18,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/pedestals" component={Pedestals} />
+        <Route path="/pedestal/:code" component={PedestalAccess} />
         <Route path="/bookings" component={Bookings} />
         <Route path="/services" component={Services} />
         <Route path="/profile" component={Profile} />
