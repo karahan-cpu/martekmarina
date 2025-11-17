@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response } from "express";
 import { storage } from "../server/storage";
 import { insertPedestalSchema, insertBookingSchema, insertServiceRequestSchema } from "../shared/schema";
 
