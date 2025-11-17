@@ -76,6 +76,7 @@ app.get("/api/pedestals", async (_req, res) => {
 
 app.get("/api/pedestals/:id", async (req, res) => {
   try {
+    await initPromise;
     const pedestal = await storage.getPedestal(req.params.id);
     if (!pedestal) {
       return res.status(404).json({ error: "Pedestal not found" });
@@ -88,6 +89,7 @@ app.get("/api/pedestals/:id", async (req, res) => {
 
 app.patch("/api/pedestals/:id", async (req, res) => {
   try {
+    await initPromise;
     const updated = await storage.updatePedestal(req.params.id, req.body);
     if (!updated) {
       return res.status(404).json({ error: "Pedestal not found" });
@@ -100,6 +102,7 @@ app.patch("/api/pedestals/:id", async (req, res) => {
 
 app.post("/api/pedestals", async (req, res) => {
   try {
+    await initPromise;
     const validatedData = insertPedestalSchema.parse(req.body);
     const pedestal = await storage.createPedestal(validatedData);
     res.status(201).json(pedestal);
@@ -110,6 +113,7 @@ app.post("/api/pedestals", async (req, res) => {
 
 app.get("/api/bookings", async (_req, res) => {
   try {
+    await initPromise;
     const bookings = await storage.getBookings();
     res.json(bookings);
   } catch (error) {
@@ -119,6 +123,7 @@ app.get("/api/bookings", async (_req, res) => {
 
 app.get("/api/bookings/:id", async (req, res) => {
   try {
+    await initPromise;
     const booking = await storage.getBooking(req.params.id);
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
@@ -131,6 +136,7 @@ app.get("/api/bookings/:id", async (req, res) => {
 
 app.post("/api/bookings", async (req, res) => {
   try {
+    await initPromise;
     const validatedData = insertBookingSchema.parse(req.body);
     const booking = await storage.createBooking(validatedData);
     res.status(201).json(booking);
@@ -141,6 +147,7 @@ app.post("/api/bookings", async (req, res) => {
 
 app.patch("/api/bookings/:id", async (req, res) => {
   try {
+    await initPromise;
     const updated = await storage.updateBooking(req.params.id, req.body);
     if (!updated) {
       return res.status(404).json({ error: "Booking not found" });
@@ -153,6 +160,7 @@ app.patch("/api/bookings/:id", async (req, res) => {
 
 app.get("/api/service-requests", async (_req, res) => {
   try {
+    await initPromise;
     const requests = await storage.getServiceRequests();
     res.json(requests);
   } catch (error) {
@@ -162,6 +170,7 @@ app.get("/api/service-requests", async (_req, res) => {
 
 app.get("/api/service-requests/:id", async (req, res) => {
   try {
+    await initPromise;
     const request = await storage.getServiceRequest(req.params.id);
     if (!request) {
       return res.status(404).json({ error: "Service request not found" });
@@ -174,6 +183,7 @@ app.get("/api/service-requests/:id", async (req, res) => {
 
 app.post("/api/service-requests", async (req, res) => {
   try {
+    await initPromise;
     const validatedData = insertServiceRequestSchema.parse(req.body);
     const request = await storage.createServiceRequest(validatedData);
     res.status(201).json(request);
@@ -184,6 +194,7 @@ app.post("/api/service-requests", async (req, res) => {
 
 app.patch("/api/service-requests/:id", async (req, res) => {
   try {
+    await initPromise;
     const updated = await storage.updateServiceRequest(req.params.id, req.body);
     if (!updated) {
       return res.status(404).json({ error: "Service request not found" });
