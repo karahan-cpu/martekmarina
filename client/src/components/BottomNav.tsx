@@ -1,4 +1,4 @@
-import { Home, Anchor, Map, Calendar, User } from "lucide-react";
+import { Home, Anchor, Calendar, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function BottomNav() {
@@ -7,7 +7,6 @@ export default function BottomNav() {
   const navItems = [
     { path: "/", icon: Home, label: "Home", testId: "nav-dashboard" },
     { path: "/pedestals", icon: Anchor, label: "Pedestals", testId: "nav-pedestals" },
-    { path: "/map", icon: Map, label: "Map", testId: "nav-map" },
     { path: "/bookings", icon: Calendar, label: "Book", testId: "nav-bookings" },
     { path: "/profile", icon: User, label: "Profile", testId: "nav-profile" },
   ];

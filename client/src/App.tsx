@@ -9,7 +9,6 @@ import Pedestals from "@/pages/Pedestals";
 import Bookings from "@/pages/Bookings";
 import Services from "@/pages/Services";
 import Profile from "@/pages/Profile";
-import Map from "@/pages/Map";
 import BottomNav from "@/components/BottomNav";
 
 function Router() {
@@ -18,7 +17,6 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/pedestals" component={Pedestals} />
-        <Route path="/map" component={Map} />
         <Route path="/bookings" component={Bookings} />
         <Route path="/services" component={Services} />
         <Route path="/profile" component={Profile} />
