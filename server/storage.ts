@@ -175,4 +175,14 @@ export class MemStorage implements IStorage {
   }
 }
 
+// Initialize storage as a singleton
 export const storage = new MemStorage();
+
+// Verify initialization
+if (storage) {
+  storage.getPedestals().then(pedestals => {
+    console.log(`[Storage] Verified ${pedestals.length} pedestals initialized`);
+  }).catch(err => {
+    console.error("[Storage] Error verifying pedestals:", err);
+  });
+}

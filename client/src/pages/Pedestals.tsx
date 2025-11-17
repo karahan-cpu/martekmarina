@@ -16,9 +16,17 @@ export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
   const { toast } = useToast();
 
-  const { data: pedestals, isLoading } = useQuery<Pedestal[]>({
+  const { data: pedestals, isLoading, error } = useQuery<Pedestal[]>({
     queryKey: ["/api/pedestals"],
   });
+
+  // Log for debugging
+  if (error) {
+    console.error("[Pedestals] Query error:", error);
+  }
+  if (pedestals) {
+    console.log(`[Pedestals] Loaded ${pedestals.length} pedestals`);
+  }
 
   const updatePedestalMutation = useMutation({
     mutationFn: async (data: { id: string; waterEnabled?: boolean; electricityEnabled?: boolean }) => {
@@ -85,6 +93,26 @@ export default function Pedestals() {
             </CardContent>
           </Card>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-destructive" data-testid="text-error">
+              Error loading pedestals: {error instanceof Error ? error.message : "Unknown error"}
+            </p>
+            <Button 
+              className="mt-4" 
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/pedestals"] })}
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
