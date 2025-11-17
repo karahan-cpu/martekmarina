@@ -3,17 +3,22 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Droplets, Zap, MapPin } from "lucide-react";
 import type { Pedestal } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 import adBanner from "@assets/generated_images/Marina_equipment_ad_banner_d7c1fc9b.png";
 
 export default function Pedestals() {
   const [selectedPedestal, setSelectedPedestal] = useState<Pedestal | null>(null);
+  const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newBerthNumber, setNewBerthNumber] = useState("");
+  const [newLocationX, setNewLocationX] = useState("0");
+  const [newLocationY, setNewLocationY] = useState("0");
   const { toast } = useToast();
 
   const { data: pedestals, isLoading } = useQuery<Pedestal[]>({
@@ -42,6 +47,41 @@ export default function Pedestals() {
     },
   });
 
+  const createPedestalMutation = useMutation({
+    mutationFn: async (data: { berthNumber: string; locationX: number; locationY: number }) => {
+      const res = await apiRequest("POST", "/api/pedestals", {
+        berthNumber: data.berthNumber,
+        status: "available",
+        waterEnabled: false,
+        electricityEnabled: false,
+        waterUsage: 0,
+        electricityUsage: 0,
+        currentUserId: null,
+        locationX: data.locationX,
+        locationY: data.locationY,
+      });
+      return (await res.json()) as Pedestal;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/pedestals"] });
+      toast({
+        title: "Pedestal Created",
+        description: "New pedestal is now available for booking.",
+      });
+      setNewBerthNumber("");
+      setNewLocationX("0");
+      setNewLocationY("0");
+      setCreateDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Creation Failed",
+        description: error?.message || "Failed to create pedestal. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "available":
@@ -60,6 +100,23 @@ export default function Pedestals() {
   const getStatusLabel = (status: string) => {
     if (!status || typeof status !== 'string') return 'Unknown';
     return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  const handleCreatePedestal = () => {
+    if (!newBerthNumber.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a berth number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createPedestalMutation.mutate({
+      berthNumber: newBerthNumber.trim().toUpperCase(),
+      locationX: Number(newLocationX) || 0,
+      locationY: Number(newLocationY) || 0,
+    });
   };
 
   const handleToggleService = (service: "water" | "electricity", enabled: boolean) => {
@@ -92,13 +149,76 @@ export default function Pedestals() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold" data-testid="text-page-title">
-            Smart Pedestals
-          </h1>
-          <Badge variant="outline" data-testid="badge-pedestal-count">
-            {pedestals?.length || 0} Total
-          </Badge>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold" data-testid="text-page-title">
+              Smart Pedestals
+            </h1>
+            <Badge variant="outline" data-testid="badge-pedestal-count">
+              {pedestals?.length || 0} Total
+            </Badge>
+          </div>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="secondary" className="w-full md:w-auto" data-testid="button-add-pedestal">
+                Add Pedestal
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Pedestal</DialogTitle>
+                <DialogDescription>
+                  Create a new available pedestal with default services disabled.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="input-berth-number">Berth Number</Label>
+                  <Input
+                    id="input-berth-number"
+                    placeholder="e.g. G-701"
+                    value={newBerthNumber}
+                    onChange={(event) => setNewBerthNumber(event.target.value)}
+                    data-testid="input-berth-number"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="input-location-x">Map Position X</Label>
+                    <Input
+                      id="input-location-x"
+                      type="number"
+                      value={newLocationX}
+                      onChange={(event) => setNewLocationX(event.target.value)}
+                      data-testid="input-location-x"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="input-location-y">Map Position Y</Label>
+                    <Input
+                      id="input-location-y"
+                      type="number"
+                      value={newLocationY}
+                      onChange={(event) => setNewLocationY(event.target.value)}
+                      data-testid="input-location-y"
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setCreateDialogOpen(false)} data-testid="button-cancel-create">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreatePedestal}
+                  disabled={createPedestalMutation.isPending}
+                  data-testid="button-confirm-create"
+                >
+                  {createPedestalMutation.isPending ? "Creating..." : "Create Pedestal"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {!pedestals || pedestals.length === 0 ? (
